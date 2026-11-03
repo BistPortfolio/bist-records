@@ -4,38 +4,45 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 def main():
-    # 1. GitHub Secrets kasasından gelen gizli anahtarı ve ID'yi alıyoruz
-    sa_key_json = os.environ.get("GCP_SA_KEY")
+    # 1. Parçalı Secrets değişkenlerini alıyoruz
+    client_email = os.environ.get("GCP_CLIENT_EMAIL")
+    project_id = os.environ.get("GCP_PROJECT_ID")
+    private_key = os.environ.get("GCP_PRIVATE_KEY")
     spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 
-    if not sa_key_json or not spreadsheet_id:
-        raise ValueError("GCP_SA_KEY veya SPREADSHEET_ID ortam değişkenleri eksik!")
+    if not all([client_email, project_id, private_key, spreadsheet_id]):
+        raise ValueError("Gerekli ortam değişkenlerinden biri veya birkaçı eksik!")
 
-    # 2. Google Sheets API kimlik doğrulamasını yapıyoruz
+    # GitHub Secrets escape karakterlerini (\\n) gerçek alt satıra (\n) dönüştürüyoruz
+    formatted_private_key = private_key.replace('\\n', '\n')
+
+    # 2. Servis hesabı sözlüğünü dinamik oluşturuyoruz
+    creds_dict = {
+        "type": "service_account",
+        "project_id": project_id,
+        "private_key": formatted_private_key,
+        "client_email": client_email,
+        "token_uri": "https://oauth2.googleapis.com/token"
+    }
+
+    # 3. Google Sheets API yetkilendirmesi
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
     
-    # JSON string verisini Python sözlüğüne çevirip yetkilendiriyoruz
-    creds_dict = json.loads(sa_key_json)
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
 
-    # 3. Google E-Tablomuzu ID ile açıyoruz
+    # 4. Tabloya bağlanma ve 2. satırdan itibaren veri yazma
     spreadsheet = client.open_by_key(spreadsheet_id)
     print(f"Başarıyla bağlanıldı: {spreadsheet.title}")
 
-    # Örnek test: 'SpotVerileri' dosyasındaki 'GenelBilgiler' sekmesine veri yazma simülasyonu
-    # (İleride buraya TradingView veya dış kaynaklardan çektiğimiz veriler gelecek)
     try:
         sheet = spreadsheet.worksheet("GenelBilgiler")
         
         # Mermere kazıdığımız kural: 2. satırdan itibaren yazdırma
-        # Örnek veri satırı: [Hisse, Fiyat, Tarih]
         ornek_veri = ["AEFES", "100.50", "2026-11-04"]
-        
-        # 2. satıra veriyi iliştiriyoruz (append_row otomatik olarak boş olan ilk satıra, yani başlıkların altına yazar)
         sheet.append_row(ornek_veri)
         print("Veri başarıyla 2. satırdan itibaren işlendi Hacı!")
 
