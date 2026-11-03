@@ -4,37 +4,24 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 def main():
-    # 1. Parçalı Secrets değişkenlerini alıyoruz
-    client_email = os.environ.get("GCP_CLIENT_EMAIL")
-    project_id = os.environ.get("GCP_PROJECT_ID")
-    private_key = os.environ.get("GCP_PRIVATE_KEY")
+    # Tek parça JSON anahtarını ve tablo ID'sini alıyoruz
+    sa_key_json = os.environ.get("GCP_SA_KEY")
     spreadsheet_id = os.environ.get("SPREADSHEET_ID")
 
-    if not all([client_email, project_id, private_key, spreadsheet_id]):
-        raise ValueError("Gerekli ortam değişkenlerinden biri veya birkaçı eksik!")
+    if not sa_key_json or not spreadsheet_id:
+        raise ValueError("GCP_SA_KEY veya SPREADSHEET_ID ortam değişkenleri eksik!")
 
-    # GitHub Secrets escape karakterlerini (\\n) gerçek alt satıra (\n) dönüştürüyoruz
-    formatted_private_key = private_key.replace('\\n', '\n')
-
-    # 2. Servis hesabı sözlüğünü dinamik oluşturuyoruz
-    creds_dict = {
-        "type": "service_account",
-        "project_id": project_id,
-        "private_key": formatted_private_key,
-        "client_email": client_email,
-        "token_uri": "https://oauth2.googleapis.com/token"
-    }
-
-    # 3. Google Sheets API yetkilendirmesi
+    # Google Sheets API yetkilendirmesi
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive"
     ]
     
+    creds_dict = json.loads(sa_key_json)
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
 
-    # 4. Tabloya bağlanma ve 2. satırdan itibaren veri yazma
+    # Tabloya bağlanma ve 2. satırdan itibaren veri yazma
     spreadsheet = client.open_by_key(spreadsheet_id)
     print(f"Başarıyla bağlanıldı: {spreadsheet.title}")
 
