@@ -1,9 +1,9 @@
 name: BIST Portfoy Bot
 
 on:
-  workflow_dispatch: # İstersek GitHub panelinden tek tıkla manuel tetikleyebilelim diye
+  workflow_dispatch:
   schedule:
-    - cron: '30 8 * * 1-5' # Hafta içi her gün Türkiye saati ile sabah (örnek zamanlama)
+    - cron: '30 8 * * 1-5'
 
 jobs:
   run-python-script:
@@ -23,7 +23,9 @@ jobs:
 
       - name: Run main script
         env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_CLIENT_EMAIL: ${{ secrets.GCP_CLIENT_EMAIL }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_PRIVATE_KEY: ${{ secrets.GCP_PRIVATE_KEY }}
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
         run: |
           python main.py
