@@ -36,7 +36,7 @@ def main():
             sheet = spreadsheet.add_worksheet(title=sheet_name, rows="100", cols="10")
             print(f"'{sheet_name}' sekmesi başarıyla oluşturuldu.")
 
-        print("5. Veri yazılıyor...")
+print("5. Veri yazılıyor...")
         ornek_veri = ["AEFES", "100.50", "2026-11-04"]
         sheet.append_row(ornek_veri)
         print("İşlem tamamdır Hacı, veri başarıyla 2. satırdan itibaren işlendi!")
@@ -45,6 +45,9 @@ def main():
         print("\n❌ KRİTİK HATA YAKALANDI:")
         traceback.print_exc()
         raise e
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
 main()
