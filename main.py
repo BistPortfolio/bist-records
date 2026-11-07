@@ -3,7 +3,6 @@ import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from tradingview_ta import TA_Handler, Interval
-import pandas as pd
 
 def main():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -45,8 +44,9 @@ def main():
     if not data_list:
         return
 
-    data_list.sort(key=lambda x: x[0])
-    worksheet.update(values=data_list, range_name="A3:C7")
+    # Dün ilk çalıştığı gibi doğrudan yazdırıyoruz
+    worksheet.update("A3", data_list)
+    print("Veriler yazıldı.")
 
 if __name__ == "__main__":
     main()
