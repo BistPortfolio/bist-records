@@ -104,4 +104,4 @@ if __name__ == "__main__":
     gt_doc = connect_to_sheets()
     update_spot_data(gt_doc)
     update_viop_data(gt_doc)
-    print("Tüm işlemler başarıyla tamamlandı Hacı!")
+    print("Tüm işlemler başarıyla tamamlandı!")
