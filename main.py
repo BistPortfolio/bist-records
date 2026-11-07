@@ -22,7 +22,7 @@ def main():
     spreadsheet = client.open_by_key(spreadsheet_id)
     worksheet = spreadsheet.worksheet("SpotVerileri")
     
-    # 2. Veri Çekme
+    # 2. Örnek Veri Çekme (Sütun yapına uygun başlıklarla)
     symbols = ["THYAO", "GARAN", "AKBNK", "EREGL", "KCHOL"]
     data_list = []
     
@@ -36,6 +36,7 @@ def main():
             )
             analysis = handler.get_analysis()
             
+            # Tablodaki sütun yapına (Sembol, Fiyat, Hacim vb.) dikkat ederek veri ekliyoruz
             data_list.append({
                 "Sembol": symbol,
                 "Fiyat": analysis.indicators.get("close", 0),
@@ -48,18 +49,14 @@ def main():
         print("İşlenecek veri bulunamadı.")
         return
 
-    # Pandas ile A-Z Alfabetik Sıralama
     df = pd.DataFrame(data_list)
-    df = df.sort_values(by="Sembol", ascending=True)
     
-    # 3. Google Sheets'e Yazdırma (Tablo başlıklarını uçurmadan, 3. satırdan başlatarak)
-    # Önce 3. satırdan sonraki eski verileri temizleyelim (A3 hücresinden itibaren)
-    # Veya doğrudan 3. satırdan itibaren verileri güncelliyoruz:
+    # 3. Yazdırma İşlemi (Asla clear() yok, başlıklar ve tablo yapısı korunuyor)
     rows = df.values.tolist()
     
-    # A3 hücresinden başlayarak verileri yazdırıyoruz (Başlıklara dokunmuyoruz!)
+    # Sadece A3 hücresinden başlayarak verileri günceller, üstteki başlıklara dokunmaz
     worksheet.update(values=rows, range_name=f"A3:C{2 + len(rows)}")
-    print("Veriler SpotVerileri sekmesine 3. satırdan itibaren alfabetik olarak yazıldı!")
+    print("Veriler SpotVerileri sekmesine başarıyla işlendi.")
 
 if __name__ == "__main__":
     main()
