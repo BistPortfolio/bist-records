@@ -32,24 +32,24 @@ def update_spot_data(sheet):
     
     url = "https://scanner.tradingview.com/turkey/scan"
     
-    # Doğru ve tam TradingView Scanner API sütun haritası
+    # TradingView Scanner API Standart Snake_Case Sütun Haritası (Q, AF, AQ, AP, AX ve Bilanço/Gelir/Nakit Akışı dahil)
     payload = {
         "filter": [{"left": "exchange", "operation": "equal", "right": "BIST"}],
         "options": {"lang": "tr"},
         "symbols": {"query": {"types": []}},
         "columns": [
-            # Genel Bakış
+            # Temel Bilgiler / Genel Bakış
             "name", "description", "sector", "close", "change", "volume", "relative_volume_10d_calc",
             "price_earnings_ttm", "earnings_per_share_diluted_ttm", "earnings_per_share_diluted_growth_ttm", "dividends_yield_current",
-            # Performans ve Volatilite (Nokta notasyonlu doğru TV anahtarları)
-            "Perf.W", "Perf.1M", "Perf.3M", "Perf.6M", "Perf.YTD", "Perf.1Y", "Perf.5Y", "Perf.10Y", "Perf.All",
-            "Volatility.W", "Volatility.M",
-            # Teknikler (Doğru TV öneri ve osilatör anahtarları)
-            "Recommend.All", "Recommend.MA", "Recommend.Other", "RSI", "Mom", "CCI", "MACD.macd", "MACD.signal",
-            # Değerleme ve Karlılık
+            # Performans ve Volatilite (Q sütunu dahil eksiksiz perf listesi)
+            "perf_1w", "perf_1m", "perf_3m", "perf_6m", "perf_ytd", "perf_1y", "perf_5y", "perf_10y", "perf_all",
+            "volatility_1w", "volatility_1m",
+            # Teknik Göstergeler ve Skorlar
+            "recommendation_mark", "rec_m_ma", "rec_m_rsi", "RSI", "Mom", "CCI", "MACD.macd", "MACD.signal",
+            # Değerleme ve Karlılık (AF, AQ, AP, AX vb. alanlar)
             "price_sales", "price_book", "fcf_margin", "net_income", "gross_margin", "operating_margin", 
             "pre_tax_margin", "net_profit_margin",
-            # Gelir Tablosu, Bilanço ve Nakit Akışı Kalemleri
+            # Gelir Tablosu, Bilanço ve Nakit Akışı Detay Kalemleri
             "total_revenue", "total_assets", "current_assets", "cash_and_short_term_investments", 
             "total_liabilities", "total_debt", "net_debt", "total_shareholder_equity", 
             "current_ratio", "quick_ratio", "debt_to_equity", "cash_to_debt"
