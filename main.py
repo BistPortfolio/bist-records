@@ -12,7 +12,7 @@ def main():
     spreadsheet_id = os.environ.get("SPREADSHEET_ID")
     
     if not sa_key_json or not spreadsheet_id:
-        raise ValueError("GCP_SA_KEY veya SPREADSHEET_ID ortam değişkenleri eksik!")
+        raise ValueError("GCP_SA_KEY veya SPREADSHEET_ID eksik!")
         
     creds_dict = json.loads(sa_key_json)
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
@@ -34,22 +34,19 @@ def main():
             )
             analysis = handler.get_analysis()
             
-            data_list.append({
-                "Sembol": symbol,
-                "Fiyat": analysis.indicators.get("close", 0),
-                "Hacim": analysis.indicators.get("volume", 0)
-            })
+            data_list.append([
+                symbol,
+                analysis.indicators.get("close", 0),
+                analysis.indicators.get("volume", 0)
+            ])
         except Exception as e:
             print(f"{symbol} hata: {e}")
             
     if not data_list:
         return
 
-    df = pd.DataFrame(data_list)
-    df = df.sort_values(by="Sembol", ascending=True)
-    
-    rows = df.values.tolist()
-    worksheet.update("A3", rows)
+    data_list.sort(key=lambda x: x[0])
+    worksheet.update(values=data_list, range_name="A3:C7")
 
 if __name__ == "__main__":
     main()
