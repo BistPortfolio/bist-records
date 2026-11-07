@@ -1,5 +1,5 @@
 gspread
 oauth2client
-tradingview_ta
 pandas
 requests
+numpy
