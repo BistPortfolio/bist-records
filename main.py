@@ -29,7 +29,8 @@ def main():
                 symbol=symbol,
                 screener="turkey",
                 exchange="BIST",
-                interval=Interval.INTERVAL_1_DAY
+                interval=Interval.INTERVAL_1_DAY,
+                timeout=10
             )
             analysis = handler.get_analysis()
             
@@ -42,9 +43,9 @@ def main():
             print(f"{symbol} hata: {e}")
             
     if not data_list:
+        print("Veri alınamadı.")
         return
 
-    # Dün ilk çalıştığı gibi doğrudan yazdırıyoruz
     worksheet.update("A3", data_list)
     print("Veriler yazıldı.")
 
