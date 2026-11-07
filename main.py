@@ -4,18 +4,9 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
 
-def connect_to_sheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_dict = json.loads(os.environ.get("GCP_SA_KEY"))
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    client = gspread.authorize(creds)
-    return client.open_by_key(os.environ.get("SPREADSHEET_ID"))
-
-def update_spot_data(sheet):
-    worksheet = sheet.worksheet("SpotVerileri")
+def debug_scan():
     url = "https://scanner.tradingview.com/turkey/scan"
     
-    # İstediğimiz tüm sütunların TradingView karşılıkları (Sıralı liste)
     columns_74 = [
         "name", "description", "sector", "close", "change", "change_abs", "volume", "Value.Traded", 
         "relative_volume_10d_calc", "market_cap_basic", "price_earnings_ttm", "earnings_per_share_diluted_ttm", 
@@ -40,32 +31,25 @@ def update_spot_data(sheet):
         "options": {"lang": "tr"},
         "symbols": {"query": {"types": []}},
         "columns": columns_74,
-        "range": [0, 1000]
+        "range": [0, 1]  # Sadece ilk şirketi test için çeker
     }
     
     response = requests.post(url, json=payload, timeout=15)
-    result = response.json()
-    data = result.get("data", [])
+    data = response.json().get("data", [])
     
-    rows_to_write = []
-    for item in data:
-        # TradingView her satırı 'd' içinde ve yukarıdaki columns sırasıyla döner.
-        # Bu yöntemde her bir veriyi kendi sütun indexine kilitliyoruz.
+    if data:
+        item = data[0]
         raw_values = item.get("d", [])
+        print(f"İstenen sütun sayısı: {len(columns_74)}")
+        print(f"API'den dönen ham veri eleman sayısı: {len(raw_values)}")
+        print(f"Şirket adı: {item.get('s')}")
         
-        # 74 elemanlı tam dolu satır şablonu oluştur (boşluklar "" olacak)
-        row_mapped = [""] * 74
-        for idx, val in enumerate(raw_values):
-            if idx < 74:
-                row_mapped[idx] = val if val is not None else ""
-                
-        rows_to_write.append(row_mapped)
-        
-    if rows_to_write:
-        # A3 hücresinden itibaren temiz ve hizalanmış veriyi bas
-        worksheet.update('A3', rows_to_write)
-        print(f"Başarıyla güncellendi: {len(rows_to_write)} şirket, 74 sütun net hizalandı.")
+        # Hangilerinin None veya boş döndüğünü görelim
+        for i, (col, val) in enumerate(zip(columns_74, raw_values)):
+            if val is None:
+                print(f"[{i}] {col} -> Boş (None döndü)")
+    else:
+        print("API'den veri dönmedi.")
 
 if __name__ == "__main__":
-    gt_doc = connect_to_sheets()
-    update_spot_data(gt_doc)
+    debug_scan()
