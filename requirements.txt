@@ -1,4 +1,5 @@
 gspread
 oauth2client
-pandas
 tradingview_ta
+pandas
+requests
