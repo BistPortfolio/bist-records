@@ -2,6 +2,9 @@ name: Botu Çalıştır
 
 on:
   workflow_dispatch:
+  schedule:
+    # Her gün Türkiye saati ile 18:40 (UTC 15:40)
+    - cron: '40 15 * * *'
 
 jobs:
   run-bot:
