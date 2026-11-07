@@ -15,7 +15,7 @@ def update_spot_data(sheet):
     worksheet = sheet.worksheet("SpotVerileri")
     url = "https://scanner.tradingview.com/turkey/scan"
     
-    # Sadece TradingView'in BİST için DOLU veri döndürdüğü garanti olan metrikler ve başlıkları
+    # Performans metriklerinin TradingView BİST API'sindeki GERÇEK kod adları (Perf.X)
     mapping = [
         ("Sembol", "name"),
         ("Şirket Adı", "description"),
@@ -25,22 +25,25 @@ def update_spot_data(sheet):
         ("Fiyat Değişimi", "change_abs"),
         ("Hacim", "volume"),
         ("İşlem Hacmi (TL)", "Value.Traded"),
-        ("Rel Hacim (10D)", "relative_volume_10d_calc"),
         ("Piyasa Değeri", "market_cap_basic"),
         ("F/K (TTM)", "price_earnings_ttm"),
         ("Hisse Başına Kazanç", "earnings_per_share_diluted_ttm"),
         ("PD/Satış", "price_sales"),
         ("PD/DD", "price_book"),
         ("Temettü Verimi %", "dividends_yield_current"),
-        ("Haftalık Perf %", "perf_1w"),
-        ("Aylık Perf %", "perf_1m"),
-        ("3 Aylık Perf %", "perf_3m"),
-        ("6 Aylık Perf %", "perf_6m"),
-        ("YTD Perf %", "perf_ytd"),
-        ("1 Yıllık Perf %", "perf_1y"),
-        ("5 Yıllık Perf %", "perf_5y"),
-        ("Haftalık Volatilite", "volatility_week"),
-        ("Aylık Volatilite", "volatility_month"),
+        
+        # --- PERFORMANS SEKMEDEKİ VERİLER (DOĞRU API KEY'LERİ) ---
+        ("Haftalık Perf %", "Perf.W"),
+        ("Aylık Perf %", "Perf.1M"),
+        ("3 Aylık Perf %", "Perf.3M"),
+        ("6 Aylık Perf %", "Perf.6M"),
+        ("YTD Perf %", "Perf.YTD"),
+        ("1 Yıllık Perf %", "Perf.Y"),
+        ("5 Yıllık Perf %", "Perf.5Y"),
+        # ----------------------------------------------------
+        
+        ("Haftalık Volatilite", "Volat.W"),
+        ("Aylık Volatilite", "Volat.M"),
         ("Al/Sat Tavsiyesi", "recommendation_mark"),
         ("RSI (14)", "RSI"),
         ("Momentum", "Mom"),
@@ -49,12 +52,6 @@ def update_spot_data(sheet):
         ("Stoch D", "Stoch.D"),
         ("MACD", "MACD.macd"),
         ("MACD Sinyal", "MACD.signal"),
-        ("Awesome Osc", "AO"),
-        ("ADX", "ADX"),
-        ("Aroon Up", "Aroon.Up"),
-        ("Aroon Down", "Aroon.Down"),
-        ("Bollinger Üst", "BB.upper"),
-        ("Bollinger Alt", "BB.lower"),
         ("Toplam Gelir", "total_revenue"),
         ("Brüt Kar", "gross_profit"),
         ("Faaliyet Karı", "operating_income"),
@@ -91,7 +88,7 @@ def update_spot_data(sheet):
     if all_rows:
         worksheet.clear()
         worksheet.update('A1', all_rows)
-        print(f"İşlem Tamam: {len(headers)} adet garantili dolu sütun A1'den itibaren basıldı.")
+        print(f"Performans verileri güncellendi: {len(data)} şirket çekildi.")
 
 if __name__ == "__main__":
     gt_doc = connect_to_sheets()
