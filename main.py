@@ -30,15 +30,7 @@ def update_spot_data(sheet):
     print("Spot verileri işleniyor...")
     worksheet = sheet.worksheet("SpotVerileri")
     
-    # TradingView Scanner API üzerinden BIST verilerini çekme isteği
     url = "https://scanner.tradingview.com/turkey/scan"
-    
-    # İstediğimiz sütunların listesi (Senin hazırladığın A'dan BV'ye olan haritaya denk gelen TradingView alanları)
-    columns_to_fetch = [
-        "name", "description", "sector", "close", "change", "volume", "relative_volume_10d_calc",
-        "price_earnings_ttm", "earnings_per_share_diluted_ttm", "earnings_per_share_diluted_growth_ttm",
-        # İhtiyaca göre diğer TradingView alanları buraya eklenecek
-    ]
     
     payload = {
         "filter": [{"left": "exchange", "operation": "equal", "right": "BIST"}],
@@ -55,11 +47,11 @@ def update_spot_data(sheet):
             "total_debt", "net_debt", "total_shareholder_equity", "current_ratio", "quick_ratio",
             "debt_to_equity", "cash_to_debt"
         ],
-        "range": [0, 1000] # Tüm BIST hisselerini kapsayacak aralık
+        "range": [0, 1000]
     }
     
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, timeout=15)
         result = response.json()
         data = result.get("data", [])
         
@@ -69,8 +61,8 @@ def update_spot_data(sheet):
             rows_to_write.append(row_data)
             
         if rows_to_write:
-            # SpotVerileri 3. satırdan (A sütunundan) başla
-            worksheet.update(rows_to_write, 'A3')
+            # Doğru update kullanımı: Önce hücre konumu 'A3', sonra veri
+            worksheet.update('A3', rows_to_write)
             print(f"SpotVerileri başarıyla güncellendi. Toplam {len(rows_to_write)} şirket yazıldı.")
         else:
             print("TradingView'den veri alınamadı.")
@@ -84,19 +76,8 @@ def update_viop_data(sheet):
     worksheet = sheet.worksheet("ViopVerileri")
     
     categories = ["Aktif Sözleşmeler", "Hisse", "Döviz", "Endeks", "Emtia"]
-    
-    all_viop_rows = []
-    
     for cat in categories:
-        print(f"VİOP Kategorisi işleniyor: {cat}")
-        
-        # Örnek simülasyon/veri toplama yapısı (Gerçek VİOP veri kaynağı entegrasyonu buraya gelecek)
-        # Her satır için A sütununa kategori adı, B sütunundan itibaren ise sözleşme verileri yazılacak
-        # Örnek: ["Aktif Sözleşmeler", "F_AEFES1126", 150.5, 1.2, ...]
-        
-        # Şimdilik test/yapı iskeleti olarak bırakıyoruz, veri kaynağını bağlayacağız.
         pass
-
     print("ViopVerileri hazırlık aşamasında.")
 
 if __name__ == "__main__":
@@ -104,4 +85,4 @@ if __name__ == "__main__":
     gt_doc = connect_to_sheets()
     update_spot_data(gt_doc)
     update_viop_data(gt_doc)
-    print("Tüm işlemler başarıyla tamamlandı!")
+    print("Tüm işlemler başarıyla tamamlandı.")
