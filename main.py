@@ -6,28 +6,24 @@ from tradingview_ta import TA_Handler, Interval
 import pandas as pd
 
 def main():
-    # 1. Google Sheets Bağlantısı (Environment Secrets üzerinden)
+    # 1. Google Sheets Bağlantısı
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
-    # GitHub Secrets'tan GCP Service Account JSON verisini alıyoruz
     sa_key_json = os.environ.get("GCP_SA_KEY")
     spreadsheet_id = os.environ.get("SPREADSHEET_ID")
     
     if not sa_key_json or not spreadsheet_id:
-        raise ValueError("GCP_SA_KEY veya SSPREADSHEET_ID ortam değişkenleri eksik!")
+        raise ValueError("GCP_SA_KEY veya SPREADSHEET_ID ortam değişkenleri eksik!")
         
     creds_dict = json.loads(sa_key_json)
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
     
-    # E-tabloyu ve SpotVerileri sekmesini açıyoruz
     spreadsheet = client.open_by_key(spreadsheet_id)
     worksheet = spreadsheet.worksheet("SpotVerileri")
     
-    # 2. Örnek Veri Çekme ve İşleme (Takip edeceğin sembol listesini buraya ekleyebilirsin)
-    # Şimdilik örnek birkaç BIST hissesi ile test yapıyoruz
+    # 2. Veri Çekme
     symbols = ["THYAO", "GARAN", "AKBNK", "EREGL", "KCHOL"]
-    
     data_list = []
     
     for symbol in symbols:
@@ -40,7 +36,6 @@ def main():
             )
             analysis = handler.get_analysis()
             
-            # Verileri sözlük olarak topluyoruz
             data_list.append({
                 "Sembol": symbol,
                 "Fiyat": analysis.indicators.get("close", 0),
@@ -53,21 +48,18 @@ def main():
         print("İşlenecek veri bulunamadı.")
         return
 
-    # Pandas ile veriyi DataFrame'e çevirip Sembol adına göre A-Z alfabetik sıralıyoruz
+    # Pandas ile A-Z Alfabetik Sıralama
     df = pd.DataFrame(data_list)
     df = df.sort_values(by="Sembol", ascending=True)
     
-    # 3. Google Sheets'e Yazdırma İşlemi
-    # Önce mevcut verileri temizleyip başlıklarla beraber tabloya yazıyoruz
-    worksheet.clear()
-    
-    # Başlıklar ve satır değerlerini listeye çeviriyoruz
-    header = list(df.columns)
+    # 3. Google Sheets'e Yazdırma (Tablo başlıklarını uçurmadan, 3. satırdan başlatarak)
+    # Önce 3. satırdan sonraki eski verileri temizleyelim (A3 hücresinden itibaren)
+    # Veya doğrudan 3. satırdan itibaren verileri güncelliyoruz:
     rows = df.values.tolist()
     
-    # Tabloya veri akışını sağlıyoruz (3. satırdan başladığını varsayarak veya direkt tepeye)
-    worksheet.update([header] + rows)
-    print("Veriler SpotVerileri sekmesine alfabetik olarak başarıyla yazıldı!")
+    # A3 hücresinden başlayarak verileri yazdırıyoruz (Başlıklara dokunmuyoruz!)
+    worksheet.update(values=rows, range_name=f"A3:C{2 + len(rows)}")
+    print("Veriler SpotVerileri sekmesine 3. satırdan itibaren alfabetik olarak yazıldı!")
 
 if __name__ == "__main__":
     main()
