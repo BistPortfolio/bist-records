@@ -4,10 +4,39 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
 
-def debug_scan():
+def connect_to_sheets():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds_dict = json.loads(os.environ.get("GCP_SA_KEY"))
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    return client.open_by_key(os.environ.get("SPREADSHEET_ID"))
+
+def update_spot_data(sheet):
+    worksheet = sheet.worksheet("SpotVerileri")
     url = "https://scanner.tradingview.com/turkey/scan"
     
-    columns_74 = [
+    # 1. Başlıklar (Google Sheets'in 1. satırına yazılacak anlaşılır isimler)
+    headers = [
+        "Sembol", "Şirket Adı", "Sektör", "Kapanış", "Değişim %", "Fiyat Değişimi", "Hacim", "İşlem Hacmi (TL)", 
+        "Rel Hacim (10D)", "Piyasa Değeri", "F/K (TTM)", "Hisse Başına Kazanç", 
+        "PD/Satış", "PD/DD", "Fiyat/FAK (TTM)", "FD/FAVÖK (TTM)", 
+        "FD/Satışlar (TTM)", "Temettü Verimi %", "Hisse Başına Temettü", 
+        "Haftalık Perf %", "Aylık Perf %", "3 Aylık Perf %", "6 Aylık Perf %", "YTD Perf %", "1 Yıllık Perf %", "5 Yıllık Perf %", 
+        "Haftalık Volatilite", "Aylık Volatilite", "Al/Sat Tavsiyesi", "RSI (14)", "Momentum", "CCI", 
+        "Stoch K", "Stoch D", "MACD", "MACD Sinyal", "Awesome Osc", "ADX", "Aroon Up", "Aroon Down", 
+        "Bollinger Üst", "Bollinger Alt", "Toplam Gelir", "Brüt Kar", "Faaliyet Karı", "FAVÖK (EBITDA)", 
+        "Net Kar", "Toplam Varlıklar", "Dönen Varlıklar", "Nakit ve Nakit Benzerleri", 
+        "Toplam Yükümlülükler", "Toplam Borç", "Net Borç", "Özkaynaklar", 
+        "Brüt Kar Marjı %", "Faaliyet Kar Marjı %", "Net Kar Marjı %", "FAK Marjı %", 
+        "Özkaynak Karlılığı (ROE) %", "Aktif Karlılığı (ROA) %", "Yatırılan Sermaye Karlılığı (ROIC) %", 
+        "Cari Oran", "Likit Oran (Asit-Test)", "Borç / Özkaynak", "Nakit / Borç", "Net Borç / FAVÖK", 
+        "Serbest Nakit Akışı (FCF)", "Sermaye Harcamaları (Capex)", "Çalışan Sayısı", 
+        "Gelecek Çeyrek HBK Tahmini", "Gelecek Çeyrek Gelir Tahmini", 
+        "Yıllık HBK", "Yıllık Toplam Gelir", "Hesaplanan Piyasa Değeri"
+    ]
+
+    # 2. TradingView API Karşılıkları
+    columns_api = [
         "name", "description", "sector", "close", "change", "change_abs", "volume", "Value.Traded", 
         "relative_volume_10d_calc", "market_cap_basic", "price_earnings_ttm", "earnings_per_share_diluted_ttm", 
         "price_sales", "price_book", "price_free_cash_flow_ttm", "enterprise_value_ebitda_ttm", 
@@ -30,26 +59,28 @@ def debug_scan():
         "filter": [{"left": "exchange", "operation": "equal", "right": "BIST"}],
         "options": {"lang": "tr"},
         "symbols": {"query": {"types": []}},
-        "columns": columns_74,
-        "range": [0, 1]  # Sadece ilk şirketi test için çeker
+        "columns": columns_api,
+        "range": [0, 1000]
     }
     
     response = requests.post(url, json=payload, timeout=15)
     data = response.json().get("data", [])
     
-    if data:
-        item = data[0]
+    # 1. Satıra Türkçe Başlıkları koyuyoruz
+    all_rows = [headers]
+    
+    # 2. Satırdan itibaren şirket verilerini diziyoruz
+    for item in data:
         raw_values = item.get("d", [])
-        print(f"İstenen sütun sayısı: {len(columns_74)}")
-        print(f"API'den dönen ham veri eleman sayısı: {len(raw_values)}")
-        print(f"Şirket adı: {item.get('s')}")
+        clean_row = [val if val is not None else "" for val in raw_values]
+        all_rows.append(clean_row)
         
-        # Hangilerinin None veya boş döndüğünü görelim
-        for i, (col, val) in enumerate(zip(columns_74, raw_values)):
-            if val is None:
-                print(f"[{i}] {col} -> Boş (None döndü)")
-    else:
-        print("API'den veri dönmedi.")
+    if all_rows:
+        # Sayfayı sıfırlayıp A1'den itibaren (Başlıklar + Veriler) yazdırıyoruz
+        worksheet.clear()
+        worksheet.update('A1', all_rows)
+        print(f"Sıfır sayfaya başarıyla yazıldı: 1 satır başlık + {len(all_rows)-1} şirket verisi.")
 
 if __name__ == "__main__":
-    debug_scan()
+    gt_doc = connect_to_sheets()
+    update_spot_data(gt_doc)
