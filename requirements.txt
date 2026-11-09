@@ -1,5 +1,2 @@
-gspread
-oauth2client
-pandas
-requests
-numpy
+gspread>=6.0,<7
+requests>=2.31
