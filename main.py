@@ -167,7 +167,7 @@ def harf(i):                          # 0 -> A, 26 -> AA
 
 
 def sheets_baglan():
-    anahtar = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")   # GitHub Secret
+    anahtar = os.environ.get("GCP_SA_KEY")   # GitHub Secret
     if anahtar:
         return gspread.service_account_from_dict(json.loads(anahtar))
     return gspread.service_account(filename="anahtar.json")    # yerel çalıştırma
