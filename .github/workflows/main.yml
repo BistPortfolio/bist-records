@@ -1,48 +1,20 @@
-name: Borsa verilerini güncelle
+name: Borsa Verileri
 
 on:
-  # Elle çalıştırma: Actions sekmesi > bu iş akışı > Run workflow
-  workflow_dispatch:
-    inputs:
-      mod:
-        description: 'test: yalnızca bağlantı/yazma testi, guncelle: verileri çek ve yaz'
-        type: choice
-        options:
-          - test
-          - guncelle
-        default: test
-
-  # Zamanlama: gerçek kaynaklar bağlanıp "guncelle" modu elle denenip başarılı
-  # olduktan sonra aşağıdaki 2 satırın başındaki # işaretini kaldırın.
-  # Saatler UTC'dir: 07:00-15:59 UTC = 10:00-18:59 Türkiye saati, hafta içi.
-  # schedule:
-  #   - cron: '*/15 7-15 * * 1-5'
-
-# Aynı anda iki çalışma birbirinin yazısını bozmasın
-concurrency:
-  group: veri-guncelleme
-  cancel-in-progress: false
-
-permissions:
-  contents: read
+  schedule:
+    - cron: "40 15 * * *"      # 15:40 UTC = 18:40 Türkiye saati
+  workflow_dispatch:           # elle "Run workflow" düğmesi
 
 jobs:
-  guncelle:
+  calistir:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Bağımlılıkları kur
-        run: pip install -r requirements.txt
-
-      - name: Çalıştır
-        run: python main.py ${{ github.event.inputs.mod || 'guncelle' }}
+          python-version: "3.12"
+      - run: pip install requests gspread playwright
+      - run: playwright install --with-deps chromium
+      - run: python borsa.py
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
