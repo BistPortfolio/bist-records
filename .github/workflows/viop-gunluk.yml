@@ -1,0 +1,26 @@
+name: Viop Günlük
+
+on:
+  schedule:
+    # Hafta içi 09:30-18:55 (Türkiye UTC+3) = 06:30-15:55 UTC, 5 dakikada bir
+    - cron: "30-55/5 6 * * 1-5"
+    - cron: "*/5 7-15 * * 1-5"
+  workflow_dispatch:           # Actions sekmesinden elle çalıştırma düğmesi
+
+concurrency:
+  group: viop-gunluk           # çalışmalar üst üste binmesin
+  cancel-in-progress: false
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests gspread
+      - run: python viop_gunluk.py
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
