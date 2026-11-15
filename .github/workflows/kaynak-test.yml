@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       adres:
-        description: 'Dosya adresi (https://www.borsaistanbul.com/datum/tophacmiksoz.zip)'
+        description: 'Dosya adresi https://www.borsaistanbul.com/datum/tophacmiksoz.zip'
         required: true
         type: string
 
