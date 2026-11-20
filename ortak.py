@@ -147,19 +147,50 @@ def satirlari_oku(ham, ad=""):
         raise ValueError("Dosya yerine bir web sayfası geldi.")
     metin = ham.decode(kodlama_bul(ham))
     satirlar = [s for s in metin.splitlines() if s.strip()]
-    ornek = satirlar[:50]
-    ayrac = max(";,\t", key=lambda a: sum(s.count(a) for s in ornek))
+    ayrac = ayrac_bul(satirlar)
     return [next(csv.reader([s], delimiter=ayrac)) for s in satirlar]
 
 
-def baslik_bul(rows):
-    """Başlık satırının indeksi: sütun sayısı en yaygın değere eşit olan ilk satır."""
+def ayrac_bul(satirlar):
+    """En tutarlı ayracı seçer: her satırda aynı sayıda geçen ayraç (sayılardaki virgüller yanıltmaz)."""
+    en_iyi, puan = ";", (0, 0)
+    for a in ";\t,":
+        sayilar = [x.count(a) for x in satirlar[:50] if x.count(a) > 0]
+        if not sayilar:
+            continue
+        adet, sik = Counter(sayilar).most_common(1)[0][0], Counter(sayilar).most_common(1)[0][1]
+        if (sik, adet) > puan:
+            en_iyi, puan = a, (sik, adet)
+    return en_iyi
+
+
+def baslik_bul(rows, beklenen=None):
+    """
+    Başlık satırının indeksi. 'beklenen' (başlık adları) verilirse, beklenen başlıkların
+    en çok geçtiği satır seçilir (üstteki başlık ya da dil satırları yanıltmaz).
+    Verilmezse sütun sayısı en yaygın değere eşit olan ilk satır alınır.
+    """
+    if beklenen:
+        anahtarlar = {anahtar(k) for k in beklenen}
+        en_iyi, skor = None, 0
+        for i, r in enumerate(rows[:50]):
+            p = sum(1 for c in r if anahtar(str(c).split(" / ")[0]) in anahtarlar)
+            if p > skor:
+                en_iyi, skor = i, p
+        if skor >= 2:
+            return en_iyi
     doluluk = [sum(1 for c in r if str(c).strip()) for r in rows]
     adaylar = [d for d in doluluk[:50] if d >= 2]
     if not adaylar:
         raise ValueError("Tablo yapısı bulunamadı.")
     ortak = Counter(adaylar).most_common(1)[0][0]
     return next(i for i, d in enumerate(doluluk) if d == ortak)
+
+
+def ornek_yaz(rows, satir=5, sutun=10):
+    """Hata ayıklama: ilk satırların ilk sütunlarını günlüğe yazar."""
+    for i, r in enumerate(rows[:satir]):
+        print("  satır %d (%d hücre): %s" % (i, len(r), [str(c)[:24] for c in r[:sutun]]))
 
 
 def sayi_cevir(v):
