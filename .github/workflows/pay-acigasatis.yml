@@ -1,0 +1,34 @@
+name: Açığa Satışlar (haftalık)
+
+on:
+  schedule:
+    - cron: '0 20 * * 5'   # Cuma 23:00 Türkiye saati (20:00 UTC)
+  workflow_dispatch:
+
+concurrency:
+  group: pay-acigasatis
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Çalıştır
+        run: python pay_acigasatis.py
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
