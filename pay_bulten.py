@@ -53,7 +53,7 @@ def en_son_bulteni_bul():
 
 def hazirla(ham):
     rows = ortak.satirlari_oku(ham)
-    hi = ortak.baslik_bul(rows)
+    hi = ortak.baslik_bul(rows, ESLEME.keys())
     baslik = rows[hi]
     veri = rows[hi + 1 + BASLIK_SONRASI_ATLA:]
     if not veri:
@@ -63,6 +63,8 @@ def hazirla(ham):
     if eksik:
         print("UYARI - dosyada bulunamayan başlıklar:", ", ".join(eksik))
     if "ISLEM KODU" in eksik:
+        print("Dosyanın ilk satırları:")
+        ortak.ornek_yaz(rows)
         raise ValueError("ISLEM KODU sütunu bulunamadı.")
     return tarih, matris
 
