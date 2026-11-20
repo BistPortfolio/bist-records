@@ -6,6 +6,7 @@ Zaman  : Her ayın son iş günü 23:00 (Türkiye saati), pay-yabanci.yml
 Elle çalıştırmada (ZORLA=true) tarih kontrolü yapılmaz.
 """
 import os
+import re
 import sys
 
 import ortak
@@ -16,13 +17,13 @@ ILK_SATIR = 1
 
 
 def hazirla(ham):
-    rows = ortak.satirlari_oku(ham)
-    hi = ortak.baslik_bul(rows)
-    matris = [list(r) for r in rows[:hi + 1]]      # üst satırlar ve başlık olduğu gibi
-    for r in rows[hi + 1:]:
+    """Tüm satırlar olduğu gibi alınır; sayılar sayıya çevrilir, A sütunundaki
+    A1CAP.E gibi kodların uzantısı (.E, .F, .G) her satırda kaldırılır."""
+    matris = []
+    for r in ortak.satirlari_oku(ham):
         yeni = [ortak.sayi_cevir(c) for c in r]
-        if yeni and str(yeni[0]).strip():
-            yeni[0] = ortak.kod_temizle(r[0])
+        if yeni and re.fullmatch(r"[A-Z0-9_]+\.[A-Z]", str(yeni[0]).strip()):
+            yeni[0] = ortak.kod_temizle(yeni[0])
         matris.append(yeni)
     return matris
 
