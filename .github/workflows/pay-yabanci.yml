@@ -1,0 +1,35 @@
+name: Yabancı Yatırımcı (aylık)
+
+on:
+  schedule:
+    - cron: '0 20 28-31 * *'   # Ayın 28-31'i 23:00 TR; kod ayın son iş günü olup olmadığını kontrol eder
+  workflow_dispatch:
+
+concurrency:
+  group: pay-yabanci
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Çalıştır
+        run: python pay_yabanci.py
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          ZORLA: ${{ github.event_name == 'workflow_dispatch' }}
