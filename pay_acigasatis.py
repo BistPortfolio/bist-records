@@ -20,7 +20,7 @@ ESLEME = {
 
 def hazirla(ham):
     rows = ortak.satirlari_oku(ham)
-    hi = ortak.baslik_bul(rows)
+    hi = ortak.baslik_bul(rows, ESLEME.keys())
     ust, baslik, veri = rows[:hi], rows[hi], rows[hi + 1:]
     donem = ""
     for r in ust:                                  # başlıktan önceki ilk dolu hücre: hafta bilgisi
