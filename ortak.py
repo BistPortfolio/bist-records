@@ -134,6 +134,32 @@ def _xlsx_satirlar(ham):
     return satirlar
 
 
+def _xls_satirlar(ham):
+    """Eski Excel (.xls, OLE2) dosyasını okur (xlrd gerekir)."""
+    import xlrd
+    kitap = xlrd.open_workbook(file_contents=ham)
+    sayfa = kitap.sheet_by_index(0)
+    satirlar = []
+    for i in range(sayfa.nrows):
+        satir = []
+        for c in range(sayfa.ncols):
+            h = sayfa.cell(i, c)
+            v = h.value
+            if h.ctype == xlrd.XL_CELL_DATE:
+                try:
+                    v = xlrd.xldate_as_datetime(v, kitap.datemode).strftime("%d.%m.%Y")
+                except Exception:
+                    pass
+            elif h.ctype == xlrd.XL_CELL_NUMBER and float(v).is_integer():
+                v = int(v)
+            elif h.ctype in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK, xlrd.XL_CELL_ERROR):
+                v = ""
+            satir.append(v)
+        if any(str(x).strip() for x in satir):
+            satirlar.append(satir)
+    return satirlar
+
+
 def satirlari_oku(ham, ad=""):
     """CSV, XLSX ya da bunları içeren ZIP dosyasını satır listesine çevirir."""
     if ham[:2] == b"PK":
@@ -143,9 +169,14 @@ def satirlari_oku(ham, ad=""):
             return _xlsx_satirlar(ham)
         print("ZIP içeriği:", ", ".join(adlar))
         return satirlari_oku(z.read(adlar[0]), adlar[0])
+    if ham[:4] == b"\xd0\xcf\x11\xe0":                 # eski Excel (.xls)
+        return _xls_satirlar(ham)
     if ham.lstrip()[:1] == b"<":
         raise ValueError("Dosya yerine bir web sayfası geldi.")
-    metin = ham.decode(kodlama_bul(ham))
+    try:
+        metin = ham.decode(kodlama_bul(ham))
+    except UnicodeDecodeError:
+        raise ValueError("Dosya metin (CSV) ya da tanınan bir Excel biçimi değil: " + ad)
     satirlar = [s for s in metin.splitlines() if s.strip()]
     ayrac = ayrac_bul(satirlar)
     return [next(csv.reader([s], delimiter=ayrac)) for s in satirlar]
