@@ -1,0 +1,13 @@
+{
+  "aciklama": "PayBülten satır süzme ve sıralama kuralları. gruplar: ENSTRUMAN GRUBU kodu, GTS'ye yazılma sırası ve A sütunundan kaldırılacak uzantı. Gruplar listedeki sırayla alt alta dizilir, her grubun içi alfabetik sıralanır. Listede olmayan gruplar yazılmaz.",
+  "gruplar": [
+    {"kod": "EQT", "uzanti": ".E"},
+    {"kod": "EMS", "uzanti": ".S1"},
+    {"kod": "ETF", "uzanti": ".F"},
+    {"kod": "GMF", "uzanti": ".F1"},
+    {"kod": "GSF", "uzanti": ".F2"},
+    {"kod": "GMS", "uzanti": ".G"},
+    {"kod": "XCR", "uzanti": ".C"}
+  ],
+  "ileride_eklenebilecek": ["AOF", "ECW", "EPW"]
+}
