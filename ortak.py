@@ -249,11 +249,11 @@ def kod_temizle(v):
     return re.sub(r"\.[A-Z]$", "", str(v).strip())
 
 
-def matris_olustur(baslik, veri, esleme):
+def matris_olustur(baslik, veri, esleme, kod_temizle_uygula=True):
     """
     esleme: {'WEB BASLIGI': 'GTS SUTUN HARFİ'}. Başlıklar anahtar() ile eşleştirilir
     ('Türkçe / English' biçiminde ise Türkçe kısım alınır). 'A' sütunu işlem kodudur:
-    uzantısı kaldırılır, boş kodlu satırlar atlanır.
+    uzantısı kaldırılır (kod_temizle_uygula=False ise ham bırakılır), boş kodlu satırlar atlanır.
     Dönen: (matris, eksik_basliklar). Matris A sütunundan başlar.
     """
     hedef = {anahtar(k): a1_to_rowcol(h + "1")[1] for k, h in esleme.items()}
@@ -270,7 +270,10 @@ def matris_olustur(baslik, veri, esleme):
         for a, j in kaynak_idx.items():
             deger = r[j] if j < len(r) else ""
             h = hedef[a]
-            satir[h - 1] = kod_temizle(deger) if h == 1 else sayi_cevir(deger)
+            if h == 1:   # işlem kodu: isteğe bağlı olarak uzantı burada kaldırılır
+                satir[h - 1] = kod_temizle(deger) if kod_temizle_uygula else str(deger).strip()
+            else:
+                satir[h - 1] = sayi_cevir(deger)
         if str(satir[0]).strip():
             matris.append(satir)
     return matris, eksik
