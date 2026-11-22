@@ -1,0 +1,6 @@
+{
+  "aciklama": "ViopBülten satır süzme ve sıralama kuralları. gruplar: PAZAR SEGMENTI kodları, GTS'ye yazılma sırasıyla. Listede olmayan segmentler yazılmaz. grup_ici_siralama: 'dayanak_vade' (dayanak varlık alfabetik, sonra vade tarihi) ya da 'alfabetik' (sözleşme koduna göre).",
+  "gruplar": ["SSF", "INF", "CRF", "CRFU", "ENF", "MTF", "PMF", "PMFU", "FIF"],
+  "ileride_eklenebilecek": ["BOP", "CRO", "INO", "PCO", "SSO", "TRF"],
+  "grup_ici_siralama": "dayanak_vade"
+}
