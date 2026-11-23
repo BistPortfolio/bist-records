@@ -7,6 +7,7 @@ Kural  : kurallar_viop_bulten.json (PAZAR SEGMENTI süzme ve sıralama)
 """
 import json
 import os
+import re
 import sys
 from collections import Counter
 from datetime import datetime, date, timedelta
@@ -63,6 +64,11 @@ def vade_tarihi(v):
     return date.max
 
 
+def dayanak_temizle(v):
+    """DAYANAK VARLIK değerlerindeki THYAO.E gibi uzantıyı (.E, .F, .S1 vb.) kaldırır."""
+    return re.sub(r"\.[A-Z][0-9]?$", "", str(v).strip())
+
+
 def kurallari_uygula(matris):
     """PAZAR SEGMENTI'ne göre satırları süzer ve sıralar."""
     with open(KURAL_DOSYASI, encoding="utf-8") as f:
@@ -75,6 +81,7 @@ def kurallari_uygula(matris):
         if seg not in sira:
             disarida[seg or "(boş)"] += 1
             continue
+        satir[DAYANAK_SUTUNU] = dayanak_temizle(satir[DAYANAK_SUTUNU])
         kod = str(satir[0])
         anahtar = ((sira[seg], kod) if alfabetik else
                    (sira[seg], str(satir[DAYANAK_SUTUNU]), vade_tarihi(satir[VADE_SUTUNU]), kod))
