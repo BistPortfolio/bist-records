@@ -65,8 +65,8 @@ def vade_tarihi(v):
 
 
 def dayanak_temizle(v):
-    """DAYANAK VARLIK değerlerindeki THYAO.E gibi uzantıyı (.E, .F, .S1 vb.) kaldırır."""
-    return re.sub(r"\.[A-Z][0-9]?$", "", str(v).strip())
+    """DAYANAK VARLIK değerlerindeki THYAO.E gibi .E uzantısını kaldırır (başka uzantıya dokunmaz)."""
+    return re.sub(r"\.E$", "", str(v).strip())
 
 
 def kurallari_uygula(matris):
