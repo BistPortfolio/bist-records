@@ -176,7 +176,7 @@ def uye_incele(ad, ham):
 # ------------------------------------------------------------ İndirme
 
 def liste_baglantilari(url, metin):
-    adresler = re.findall(r'href="([^"]+)"', metin)
+    adresler = re.findall(r'href\s*=\s*["\']([^"\']+)["\']', metin, re.I)   # IIS listeleri HREF büyük harfle yazar
     sonuc = []
     for a in adresler:
         tam = requests.compat.urljoin(url, a)
@@ -191,7 +191,8 @@ def zip_adresi_bul(url, filtre="", derinlik=0):
         return url
     r = requests.get(url, headers=UA, timeout=60)
     r.raise_for_status()
-    baglantilar = liste_baglantilari(url, r.content.decode("utf-8", "replace"))
+    baglantilar = sorted(set(liste_baglantilari(url, r.content.decode("utf-8", "replace"))))
+    print("Dizin:", url, "| bulunan bağlantı:", len(baglantilar))
     zipler = [b for b in baglantilar if b.lower().endswith(".zip") and filtre.lower() in b.lower()]
     if zipler:
         return zipler[-1]
