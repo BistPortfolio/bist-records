@@ -1,0 +1,40 @@
+name: HTML inceleme
+
+on:
+  workflow_dispatch:
+    inputs:
+      adres:
+        description: 'Zip adresi ya da dizin adresi (dizinse en yeni klasörün en yeni zip dosyası alınır)'
+        required: true
+        type: string
+      filtre:
+        description: 'İsteğe bağlı: dizin seçiminde dosya adında geçen metin (örn. TAKASEOD)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  inceleme:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: İncele
+        env:
+          ADRES: ${{ github.event.inputs.adres }}
+          FILTRE: ${{ github.event.inputs.filtre }}
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        run: python html_inceleme.py "$ADRES" "$FILTRE"
